@@ -81,6 +81,14 @@ class Funcs():
         self.limpa_tela()
         self.select_lista()
         
+    def altera_cliente(self):
+        self.variaveis()
+        self.conecta_bd()
+        self.cursor.execute(""" UPDATE CLIENTES SET NOME_CLIENTE = ?, TELEFONE = ?, CIDADE = ? WHERE COD = ?""", (self.nome, self.telefone, self.cidade, self.codigo))
+        self.conn.commit()
+        self.desconecta_bd()
+        self.select_lista()
+        self.limpa_tela()
 
 class Application(Funcs):
 
@@ -92,6 +100,7 @@ class Application(Funcs):
         self.lista_frame2()
         self.montatabelas()
         self.select_lista()
+        self.Menus()
         root.mainloop()
 
     ## Funções back-end
@@ -124,7 +133,7 @@ class Application(Funcs):
         self.bt_novo = Button(self.frame_1, text='Novo', bd=2, bg='#696969', fg='white', font=('caribe', 8, 'bold'), command=self.add_cliente)
         self.bt_novo.place(relx=0.6, rely=0.1, relwidth=0.1, relheight=0.15) 
         ## Botão alterar
-        self.bt_alterar = Button(self.frame_1, text='Alterar', bd=2, bg='#696969', fg='white', font=('caribe', 8, 'bold'))
+        self.bt_alterar = Button(self.frame_1, text='Alterar', bd=2, bg='#696969', fg='white', font=('caribe', 8, 'bold'), command=self.altera_cliente)
         self.bt_alterar.place(relx=0.7, rely=0.1, relwidth=0.1, relheight=0.15) 
         ## Botão apagar
         self.bt_apagar = Button(self.frame_1, text='Apagar', bd=2, bg='#696969', fg='white', font=('caribe', 8, 'bold'), command=self.deleta_cliente)
@@ -178,6 +187,23 @@ class Application(Funcs):
         self.listaCli.configure(yscroll=self.scroolLista.set)
         self.scroolLista.place(relx=0.96, rely=0.1, relwidth=0.04, relheight=0.85)
         self.listaCli.bind("<Double-1>", self.onDoubleClick) ## Chama a função de double click
+
+    def Menus(self):
+        menubar = Menu(self.root)
+        self.root.config(menu=menubar)
+        filemenu = Menu(menubar)
+        filemenu2 = Menu(menubar)
+
+        def Quit(): self.root.destroy()
+
+        menubar.add_cascade(label = "Opções", menu= filemenu)
+        menubar.add_cascade(label = "sobre", menu= filemenu2)
+
+        filemenu.add_command(label="Sair", command= Quit)
+        filemenu2.add_command(label= "Limpa Cliente", command= self.limpa_tela)
+
+
+
 
 Application()
 
