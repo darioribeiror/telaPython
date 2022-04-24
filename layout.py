@@ -5,7 +5,7 @@ from matplotlib.pyplot import grid
 
 root = Tk()
 
-## Funções back-end
+## Funções front-end
 class Funcs(): 
     def limpa_tela(self):
         self.codigo_entry.delete(0, END)
@@ -25,7 +25,7 @@ class Funcs():
         ## Cria tabela 
         self.cursor.execute("""
                 CREATE TABLE IF NOT EXISTS CLIENTES(
-                    COD INTERGER PRIMARY KEY,
+                    COD INTEGER PRIMARY KEY,
                     NOME_CLIENTE CHAR(40) NOT NULL,
                     TELEFONE INTERGER(20),
                     CIDADE CHAR(40)
@@ -35,6 +35,52 @@ class Funcs():
         self.conn.commit(); print("Banco de dados criado")
         self.desconecta_bd()
 
+    def variaveis(self):
+        self.codigo = self.codigo_entry.get()
+        self.nome = self.nome_entry.get()
+        self.telefone = self.telefone_entry.get()
+        self.cidade = self.cidade_entry.get()
+
+    def add_cliente(self):
+        self.variaveis()
+        self.conecta_bd()
+        
+        self.cursor.execute("""INSERT INTO CLIENTES (NOME_CLIENTE, TELEFONE, CIDADE) VALUES (?, ?, ?)""", (self.nome, self.telefone, self.cidade))
+        self.conn.commit()
+        self.desconecta_bd()
+        self.select_lista()
+        self.limpa_tela()
+    
+    def select_lista(self):
+        self.listaCli.delete(*self.listaCli.get_children())
+        self.conecta_bd()
+        lista = self.cursor.execute(""" SELECT COD, NOME_CLIENTE, TELEFONE, CIDADE FROM CLIENTES ORDER BY NOME_CLIENTE ASC; """)
+        
+        for i in lista:
+            self.listaCli.insert("", END, values=i)
+        self.desconecta_bd()
+
+    def onDoubleClick(self, event):
+
+        self.limpa_tela()
+        self.listaCli.selection()
+
+        for n in self.listaCli.selection():
+            Col1, Col2, Col3, Col4 = self.listaCli.item(n, 'values')
+            self.codigo_entry.insert(END, Col1)
+            self.nome_entry.insert(END, Col2)
+            self.telefone_entry.insert(END, Col3)
+            self.cidade_entry.insert(END, Col4)
+    
+    def deleta_cliente(self):
+        self.variaveis()
+        self.conecta_bd()
+        self.cursor.execute(""" DELETE FROM CLIENTES WHERE COD = ? """, (self.codigo))
+        self.conn.commit()
+        self.desconecta_bd()
+        self.limpa_tela()
+        self.select_lista()
+        
 
 class Application(Funcs):
 
@@ -45,8 +91,10 @@ class Application(Funcs):
         self.widgets_frame1()
         self.lista_frame2()
         self.montatabelas()
+        self.select_lista()
         root.mainloop()
 
+    ## Funções back-end
     # Redimensionamento e configs da tela
     def tela(self):
         self.root.title('Criando Tela') ## Título da tela 
@@ -73,13 +121,13 @@ class Application(Funcs):
         self.bt_buscar = Button(self.frame_1, text='Buscar', bd=2, bg='#696969', fg='white', font=('caribe', 8, 'bold'))
         self.bt_buscar.place(relx=0.3, rely=0.1, relwidth=0.1, relheight=0.15)
         ## Botão novo
-        self.bt_novo = Button(self.frame_1, text='Novo', bd=2, bg='#696969', fg='white', font=('caribe', 8, 'bold'))
+        self.bt_novo = Button(self.frame_1, text='Novo', bd=2, bg='#696969', fg='white', font=('caribe', 8, 'bold'), command=self.add_cliente)
         self.bt_novo.place(relx=0.6, rely=0.1, relwidth=0.1, relheight=0.15) 
         ## Botão alterar
         self.bt_alterar = Button(self.frame_1, text='Alterar', bd=2, bg='#696969', fg='white', font=('caribe', 8, 'bold'))
         self.bt_alterar.place(relx=0.7, rely=0.1, relwidth=0.1, relheight=0.15) 
         ## Botão apagar
-        self.bt_apagar = Button(self.frame_1, text='Apagar', bd=2, bg='#696969', fg='white', font=('caribe', 8, 'bold'))
+        self.bt_apagar = Button(self.frame_1, text='Apagar', bd=2, bg='#696969', fg='white', font=('caribe', 8, 'bold'), command=self.deleta_cliente)
         self.bt_apagar.place(relx=0.8, rely=0.1, relwidth=0.1, relheight=0.15) 
 
         ## Criação de label e entrada do código 
@@ -129,6 +177,7 @@ class Application(Funcs):
         self.scroolLista = Scrollbar(self.frame_2, orient='vertical')
         self.listaCli.configure(yscroll=self.scroolLista.set)
         self.scroolLista.place(relx=0.96, rely=0.1, relwidth=0.04, relheight=0.85)
+        self.listaCli.bind("<Double-1>", self.onDoubleClick) ## Chama a função de double click
 
 Application()
 
