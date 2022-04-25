@@ -1,7 +1,6 @@
 from tkinter import *
 from tkinter import ttk
 import sqlite3
-from matplotlib.pyplot import grid
 
 root = Tk()
 
