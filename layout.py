@@ -10,6 +10,7 @@ from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.platypus import SimpleDocTemplate, Image 
 import webbrowser
 
+from PIL import ImageTk, Image
 
 root = Tk()
 
@@ -181,15 +182,28 @@ class Application(Funcs, Relatorios):
 
     ## Criando botões
     def widgets_frame1(self):
+        ## Estilizando botões 
+        self.canvas_bt = Canvas(self.frame_1, bd=0, bg='black', highlightbackground= 'gray', highlightthickness=3)
+        self.canvas_bt.place(relx=0.19, rely=0.08, relwidth=0.219, relheight=0.19)
+
         ## Botão limpar
-        self.bt_limpar = Button(self.frame_1, text='Limpar', bd=2, bg='#696969', fg='white', font=('caribe', 8, 'bold'), command=self.limpa_tela)
+        self.bt_limpar = Button(self.frame_1, text='Limpar', bd=2, bg='#696969', fg='white', activebackground='#107db2', activeforeground="white", font=('caribe', 8, 'bold'), command=self.limpa_tela)
         self.bt_limpar.place(relx=0.2, rely=0.1, relwidth=0.1, relheight=0.15)
         ## Botão buscar
         self.bt_buscar = Button(self.frame_1, text='Buscar', bd=2, bg='#696969', fg='white', font=('caribe', 8, 'bold'), command=self.busca_cliente)
         self.bt_buscar.place(relx=0.3, rely=0.1, relwidth=0.1, relheight=0.15)
+
         ## Botão novo
-        self.bt_novo = Button(self.frame_1, text='Novo', bd=2, bg='#696969', fg='white', font=('caribe', 8, 'bold'), command=self.add_cliente)
+        self.imgNovo = PhotoImage(file = "limpar.gif")
+        self.imgNovo = self.imgNovo.subsample(30,30)
+
+        self.style = ttk.Style()
+        self.style.configure("BW.TButton", relwidth=1, relheight= 1, foregroud= 'gray', borderwidth=0, bordercolor = 'gray', background='#dfe3ee', image= self.imgNovo)
+
+        self.bt_novo = ttk.Button(self.frame_1, style = "BW.TButton", command=self.add_cliente)
         self.bt_novo.place(relx=0.6, rely=0.1, relwidth=0.1, relheight=0.15) 
+        self.bt_novo.config(image=self.imgNovo)
+
         ## Botão alterar
         self.bt_alterar = Button(self.frame_1, text='Alterar', bd=2, bg='#696969', fg='white', font=('caribe', 8, 'bold'), command=self.altera_cliente)
         self.bt_alterar.place(relx=0.7, rely=0.1, relwidth=0.1, relheight=0.15) 
