@@ -2,7 +2,52 @@ from tkinter import *
 from tkinter import ttk
 import sqlite3
 
+#E imports para baixar pdf
+from reportlab.pdfgen import canvas 
+from reportlab.lib.pagesizes import letter, A4
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.platypus import SimpleDocTemplate, Image 
+import webbrowser
+
+
 root = Tk()
+
+class Relatorios():
+
+    def printCliente(self):
+        webbrowser.open("cliente.pdf")
+
+    def geraRelatorioCliente(self):
+        self.c = canvas.Canvas("cliente.pdf")
+
+        self.codigoRel = self.codigo_entry.get()
+        self.nomeRel = self.nome_entry.get()
+        self.telefoneRel = self.telefone_entry.get()
+        self.cidadeRel = self.cidade_entry.get()
+
+        ## Criando título
+        self.c.setFont("Helvetica-Bold", 24) ## Pesquisar fontes disponíveis no reportlab
+        self.c.drawString(200, 780, 'Ficha do Cliente')
+
+        ## Corpo do arquivo
+        self.c.setFont("Helvetica-Bold", 18)
+        self.c.drawString(50, 720, 'Código: ')
+        self.c.drawString(50, 695, 'Nome: ')
+        self.c.drawString(50, 670, 'Telefone: ')
+        self.c.drawString(50, 645, 'Cidade: ')
+        
+        self.c.setFont("Helvetica", 17)
+        self.c.drawString(150, 720, self.codigoRel)
+        self.c.drawString(150, 695, self.nomeRel)
+        self.c.drawString(150, 670, self.telefoneRel)
+        self.c.drawString(150, 645, self.cidadeRel)
+        
+        self.c.rect(20, 634, 558, 110, fill=False, stroke=True) ## Inicio, Altura, Largura e Tamanho do quadro
+        
+        self.c.showPage()
+        self.c.save()
+        self.printCliente()
 
 ## Funções front-end
 class Funcs(): 
@@ -89,7 +134,21 @@ class Funcs():
         self.select_lista()
         self.limpa_tela()
 
-class Application(Funcs):
+    def busca_cliente(self):
+        self.conecta_bd()
+        self.listaCli.delete(*self.listaCli.get_children())
+
+        self.nome_entry.insert(END, '%')
+        nome = self.nome_entry.get()
+        self.cursor.execute(""" SELECT COD, NOME_CLIENTE, TELEFONE, CIDADE FROM CLIENTES WHERE NOME_CLIENTE LIKE '%s' ORDER BY NOME_CLIENTE ASC """ % nome)
+        
+        buscanomeCli = self.cursor.fetchall()
+        for i in buscanomeCli:
+            self.listaCli.insert("", END, values=i)
+        self.limpa_tela()
+        self.desconecta_bd()
+
+class Application(Funcs, Relatorios):
 
     def __init__(self):
         self.root = root
@@ -126,7 +185,7 @@ class Application(Funcs):
         self.bt_limpar = Button(self.frame_1, text='Limpar', bd=2, bg='#696969', fg='white', font=('caribe', 8, 'bold'), command=self.limpa_tela)
         self.bt_limpar.place(relx=0.2, rely=0.1, relwidth=0.1, relheight=0.15)
         ## Botão buscar
-        self.bt_buscar = Button(self.frame_1, text='Buscar', bd=2, bg='#696969', fg='white', font=('caribe', 8, 'bold'))
+        self.bt_buscar = Button(self.frame_1, text='Buscar', bd=2, bg='#696969', fg='white', font=('caribe', 8, 'bold'), command=self.busca_cliente)
         self.bt_buscar.place(relx=0.3, rely=0.1, relwidth=0.1, relheight=0.15)
         ## Botão novo
         self.bt_novo = Button(self.frame_1, text='Novo', bd=2, bg='#696969', fg='white', font=('caribe', 8, 'bold'), command=self.add_cliente)
@@ -196,10 +255,12 @@ class Application(Funcs):
         def Quit(): self.root.destroy()
 
         menubar.add_cascade(label = "Opções", menu= filemenu)
-        menubar.add_cascade(label = "sobre", menu= filemenu2)
+        menubar.add_cascade(label = "Relatórios", menu= filemenu2)
 
         filemenu.add_command(label="Sair", command= Quit)
-        filemenu2.add_command(label= "Limpa Cliente", command= self.limpa_tela)
+        ##filemenu2.add_command(label= "Limpa Cliente", command= self.limpa_tela)
+
+        filemenu2.add_command(label= "Ficha do cliente", command= self.geraRelatorioCliente)
 
 
 
